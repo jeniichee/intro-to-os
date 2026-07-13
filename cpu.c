@@ -1,27 +1,29 @@
-#include <oslabs.h>
+#include "oslabs.h"
 
 // Globals
 struct PCB NULLPCB = {0, 0, 0, 0, 0, 0, 0};
 
-
 // Priority-based Preemptive Scheduling (PP)
-struct PCB handle_process_arrival_pp(struct PCB ready_queue[QUEUEMAX], int *queue_cnt, struct PCB current_process, struct PCB new_process, int timestamp) {
+struct PCB handle_process_arrival_pp(struct PCB ready_queue[QUEUEMAX], int *queue_cnt, struct PCB current_process, struct PCB new_process, int timestamp)
+{
 
-    //  no current processes 
-    if (current_process.process_id == NULLPCB.process_id){
+    //  no current processes
+    if (current_process.process_id == NULLPCB.process_id)
+    {
         new_process.execution_starttime = timestamp;
         new_process.execution_endtime = timestamp + new_process.total_bursttime;
-        new_process.remaining_bursttime = new_process.total_bursttime; 
+        new_process.remaining_bursttime = new_process.total_bursttime;
 
-        return new_process; 
+        return new_process;
     };
 
-    // compare new process with currently-running process  
+    // compare new process with currently-running process
     // new process prio less or equal to curr process
-    if (new_process.process_priority >= current_process.process_priority){ 
+    if (new_process.process_priority >= current_process.process_priority)
+    {
         new_process.execution_starttime = 0;
         new_process.execution_endtime = 0;
-        new_process.remaining_bursttime = new_process.total_bursttime; 
+        new_process.remaining_bursttime = new_process.total_bursttime;
 
         // new process add to ready q
         ready_queue[*queue_cnt] = new_process;
@@ -31,7 +33,8 @@ struct PCB handle_process_arrival_pp(struct PCB ready_queue[QUEUEMAX], int *queu
     };
 
     // new process has higher prio
-    if (new_process.process_priority < current_process.process_priority){
+    if (new_process.process_priority < current_process.process_priority)
+    {
 
         current_process.execution_endtime = 0;
         current_process.remaining_bursttime -= timestamp - current_process.execution_starttime;
@@ -44,26 +47,30 @@ struct PCB handle_process_arrival_pp(struct PCB ready_queue[QUEUEMAX], int *queu
         new_process.execution_endtime = timestamp + new_process.total_bursttime;
         new_process.remaining_bursttime = new_process.total_bursttime;
 
-        return new_process; 
+        return new_process;
     };
 };
 
-struct PCB handle_process_completion_pp(struct PCB ready_queue[QUEUEMAX], int *queue_cnt, int timestamp) {
+struct PCB handle_process_completion_pp(struct PCB ready_queue[QUEUEMAX], int *queue_cnt, int timestamp)
+{
 
-    if (*queue_cnt == 0){
+    if (*queue_cnt == 0)
+    {
 
-        return NULLPCB; 
+        return NULLPCB;
     };
 
     int highest_prio = 0;
-    for (int i; i < *queue_cnt; i++){
+    for (int i = 1; i < *queue_cnt; i++)
+    {
 
-        if (ready_queue[i].process_priority < ready_queue[highest_prio].process_priority){
-            highest_prio = i; 
+        if (ready_queue[i].process_priority < ready_queue[highest_prio].process_priority)
+        {
+            highest_prio = i;
         };
     };
 
-    struct PCB next_process = ready_queue[highest_prio]; 
+    struct PCB next_process = ready_queue[highest_prio];
 
     // remove from q
     for (int i = highest_prio; i < *queue_cnt - 1; i++)
@@ -76,7 +83,7 @@ struct PCB handle_process_completion_pp(struct PCB ready_queue[QUEUEMAX], int *q
     next_process.execution_starttime = timestamp;
     next_process.execution_endtime = timestamp + next_process.remaining_bursttime;
 
-    return next_process; 
+    return next_process;
 };
 
 // Shortest-Remaining-Time-Next Preemptive Scheduling (SRTP)
@@ -93,7 +100,8 @@ struct PCB handle_process_arrival_srtp(struct PCB ready_queue[QUEUEMAX], int *qu
     };
 
     // new process does not have shorter burst time
-    if (new_process.total_bursttime >= current_process.remaining_bursttime) {
+    if (new_process.total_bursttime >= current_process.remaining_bursttime)
+    {
 
         new_process.execution_starttime = 0;
         new_process.execution_endtime = 0;
@@ -125,7 +133,8 @@ struct PCB handle_process_arrival_srtp(struct PCB ready_queue[QUEUEMAX], int *qu
     };
 };
 
-struct PCB handle_process_completion_srtp(struct PCB ready_queue[QUEUEMAX], int *queue_cnt, int timestamp) {
+struct PCB handle_process_completion_srtp(struct PCB ready_queue[QUEUEMAX], int *queue_cnt, int timestamp)
+{
 
     if (*queue_cnt == 0)
     {
@@ -134,7 +143,7 @@ struct PCB handle_process_completion_srtp(struct PCB ready_queue[QUEUEMAX], int 
     };
 
     int smallest_remaining_burstime = 0;
-    for (int i; i < *queue_cnt; i++)
+    for (int i = 1; i < *queue_cnt; i++)
     {
 
         if (ready_queue[i].remaining_bursttime < ready_queue[smallest_remaining_burstime].remaining_bursttime)
@@ -160,7 +169,8 @@ struct PCB handle_process_completion_srtp(struct PCB ready_queue[QUEUEMAX], int 
 };
 
 // Round-Robin Scheduling (RR)
-struct PCB handle_process_arrival_rr(struct PCB ready_queue[QUEUEMAX], int *queue_cnt, struct PCB current_process, struct PCB new_process, int timestamp, int time_quantum) {
+struct PCB handle_process_arrival_rr(struct PCB ready_queue[QUEUEMAX], int *queue_cnt, struct PCB current_process, struct PCB new_process, int timestamp, int time_quantum)
+{
 
     //  no current processes
     if (current_process.process_id == NULLPCB.process_id)
@@ -189,7 +199,8 @@ struct PCB handle_process_arrival_rr(struct PCB ready_queue[QUEUEMAX], int *queu
     return current_process;
 };
 
-struct PCB handle_process_completion_rr(struct PCB ready_queue[QUEUEMAX], int *queue_cnt, int timestamp, int time_quantum) {
+struct PCB handle_process_completion_rr(struct PCB ready_queue[QUEUEMAX], int *queue_cnt, int timestamp, int time_quantum)
+{
 
     if (*queue_cnt == 0)
     {
@@ -228,4 +239,3 @@ struct PCB handle_process_completion_rr(struct PCB ready_queue[QUEUEMAX], int *q
 
     return next_process;
 };
-
